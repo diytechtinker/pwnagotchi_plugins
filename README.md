@@ -7,13 +7,18 @@ sudo mkdir -p /usr/local/share/pwnagotchi/custom-plugins/
 ```
 
 then add its path to your config.toml file located at `/etc/pwnagotchi/config.toml`:
-`main.custom_plugins = "/usr/local/share/pwnagotchi/custom-plugins/"`
+```toml
+main.custom_plugins = "/usr/local/share/pwnagotchi/custom-plugins/"
+```
 
 # BluetoothSniffer
 A plugin for [pwnagotchi](https://github.com/evilsocket/pwnagotchi) that sniffs Bluetooth devices and saves their MAC addresses, name and counts to a JSON file.
 
 ## Requirements
-- hcitools installed `sudo apt install -y bluez`
+- Make sure hcitool is installed:
+```bash
+sudo apt install -y bluez
+```
 
 ## Setup
 1. Clone this repo onto your pwnagotchi and move to the repo directory
@@ -34,4 +39,7 @@ main.plugins.bluetoothsniffer.timer = 15 # On how may seconds to scan for blueto
 main.plugins.bluetoothsniffer.devices_file = "/root/handshakes/bluetooth_devices.json"  # Path to the JSON file with bluetooth devices
 main.plugins.bluetoothsniffer.devices_file = 86400 # On how may seconds to update count bluetooth devices
 ```
-3. Restart your pwnagotchi to load the plugin.
+4. Restart your pwnagotchi to load the plugin.
+```bash
+systemctl restart pwnagotchi
+```
