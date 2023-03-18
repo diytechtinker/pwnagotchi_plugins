@@ -25,14 +25,14 @@ class BluetoothSniffer(plugins.Plugin):
             'devices_file': '/root/handshakes/bluetooth_devices.json',
             'count_interval': 86400,
             'bt_x_coord': 0,
-            'bt_y_coord': 94
+            'bt_y_coord': 84
         }
         self.devices = {}
         self.last_scan_time = 0
 
     def on_loaded(self):
-        logging.info("bluetoothsniffer plugin loaded.")
-        logging.info("Bluetoot devices file location: %s", self.options['devices_file'])
+        logging.info("[Bts] bluetoothsniffer plugin loaded.")
+        logging.info("[Bts] Bluetoot devices file location: %s", self.options['devices_file'])
         # Creating the device file path if it does not exist
         if not os.path.exists(os.path.dirname(self.options['devices_file'])):
             os.makedirs(os.path.dirname(self.options['devices_file']))
@@ -61,13 +61,12 @@ class BluetoothSniffer(plugins.Plugin):
         # Checking the time elapsed since last scan
         if current_time - self.last_scan_time >= self.options['timer']:
             self.last_scan_time = current_time
+            ui.set('BT', str(self.bt_sniff_info()))
             self.scan()
-            logging.info("BT PWND %s", str(self.bt_sniff_info()))
-            #ui.set('BT', str(self.bt_sniff_info()))
 
     # Method for scanning the nearby bluetooth devices
     def scan(self):
-        logging.info("Scanning for bluetooths...")
+        logging.info("[Bts] Scanning for bluetooths...")
         current_time = time.time()
         # Running the system command hcitool to scan nearby bluetooth devices
         cmd_inq = "sudo hcitool inq --flush"
@@ -79,7 +78,7 @@ class BluetoothSniffer(plugins.Plugin):
             for i in range(len(fields)):
                 if fields[i].decode() == "class:" and i+1 < len(fields):
                     device_class = fields[i+1].decode()
-            logging.info("Found bluetooth %s", mac_address)
+            logging.info("[Bts] Found bluetooth %s", mac_address)
             if self.devices[mac_address]['name'] == 'Unknown' or 'name' not in self.devices[mac_address]:
                 name = self.get_device_name(mac_address)
             if self.devices[mac_address]['manufacturer'] == 'Unknown' or 'manufacturer' not in self.devices[mac_address]:
@@ -90,19 +89,19 @@ class BluetoothSniffer(plugins.Plugin):
                 if name != 'Unknown' and name != self.devices[mac_address]['name']:
                     self.devices[mac_address]['name'] = name
                     self.devices[mac_address]['new_info'] = True
-                    logging.info("Updated bluetooth name: %s", name)
+                    logging.info("[Bts] Updated bluetooth name: %s", name)
                     changed = True
 
                 if manufacturer != 'Unknown' and manufacturer != self.devices[mac_address]['manufacturer']:
                     self.devices[mac_address]['manufacturer'] = manufacturer
                     self.devices[mac_address]['new_info'] = True
-                    logging.info("Updated bluetooth manufacturer: %s", manufacturer)
+                    logging.info("[Bts] Updated bluetooth manufacturer: %s", manufacturer)
                     changed = True
 
                 if device_class != self.devices[mac_address]['class']:
                     self.devices[mac_address]['class'] = device_class
                     self.devices[mac_address]['new_info'] = True
-                    logging.info("Updated bluetooth class: %s", device_class)
+                    logging.info("[Bts] Updated bluetooth class: %s", device_class)
                     changed = True
 
                 if current_time - self.last_seen_time >= self.options['count_interval']:
@@ -110,29 +109,29 @@ class BluetoothSniffer(plugins.Plugin):
                     self.last_seen_time = current_time
                     self.devices[mac_address]['last_seen'] = time.strftime('%H:%M:%S %d-%m-%Y', time.localtime(current_time))
                     self.devices[mac_address]['new_info'] = True
-                    logging.info("Updated bluetooth count.")
+                    logging.info("[Bts] Updated bluetooth count.")
                     changed = True
             else:
                 self.devices[mac_address] = {'name': name, 'count': 1, 'class': device_class, 'manufacturer': manufacturer, 'first_seen': time.strftime('%H:%M:%S %d-%m-%Y', time.localtime(current_time)), 'last_seen': time.strftime('%H:%M:%S %d-%m-%Y', time.localtime(current_time)), 'new_info': True}
                 self.last_seen_time = current_time
-                logging.info("Added new bluetooth device %s with MAC: %s", name, mac_address)
+                logging.info("[Bts] Added new bluetooth device %s with MAC: %s", name, mac_address)
                 changed = True
 
         # Save the updated devices to the JSON file
         if changed:
             with open(self.options['devices_file'], 'w') as f:
-                logging.info("Saving bluetooths %s in to json.", name)
+                logging.info("[Bts] Saving bluetooths %s in to json.", name)
                 json.dump(self.devices, f)
 
     # Method to get the device name
     def get_device_name(self, mac_address):
-        logging.info("Trying to get name for %s", mac_address)
+        logging.info("[Bts] Trying to get name for %s", mac_address)
         name = 'Unknown'
         hcitool_process = subprocess.Popen(["hcitool", "name", mac_address], stdout=subprocess.PIPE)
         output, error = hcitool_process.communicate()
         if output.decode().strip() != '':
             name = output.decode().strip()
-        logging.info("Got name %s for %s", name, mac_address)
+        logging.info("[Bts] Got name %s for %s", name, mac_address)
         return name
 
     # Method to get the device manufacturer
@@ -140,21 +139,21 @@ class BluetoothSniffer(plugins.Plugin):
         manufacturer = 'Unknown'
         cmd_info = f"sudo hcitool info {mac_address} | grep 'Manufacturer:' | cut -d ' ' -f 2-"
         try:
-            logging.info("Trying to get manufacturer for %s", mac_address)
+            logging.info("[Bts] Trying to get manufacturer for %s", mac_address)
             start_time = time.time()
             process = subprocess.Popen(cmd_info, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
             while process.poll() is None:
                 time.sleep(0.1)
                 if time.time() - start_time > 7:
-                    logging.info("Timeout while trying to get manufacturer for %s", mac_address)
+                    logging.info("[Bts] Timeout while trying to get manufacturer for %s", mac_address)
                     process.kill()
                     return manufacturer
             output, error = process.communicate(timeout=1)
             if output.decode().strip() != '':
                 manufacturer = output.decode().strip()
-            logging.info("Got manufacturer %s for %s", manufacturer, mac_address)
+            logging.info("[Bts] Got manufacturer %s for %s", manufacturer, mac_address)
         except Exception as e:
-            logging.info("Error while trying to get manufacturer for %s: %s", mac_address, str(e))
+            logging.info("[Bts] Error while trying to get manufacturer for %s: %s", mac_address, str(e))
         return manufacturer
 
     def bt_sniff_info(self):
@@ -163,5 +162,5 @@ class BluetoothSniffer(plugins.Plugin):
         num_devices = len(data)
         num_unknown = sum(1 for device in data.values() if device['name'] == 'Unknown' or device['manufacturer'] == 'Unknown')
         num_known = num_devices - num_unknown
-        return_text = "%s (F:%s)" % (num_devices, num_known)
+        return_text = "%s (%s)" % (num_devices, num_known)
         return return_text
