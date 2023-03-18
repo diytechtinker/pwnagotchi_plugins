@@ -79,10 +79,10 @@ class BluetoothSniffer(plugins.Plugin):
                 if fields[i].decode() == "class:" and i+1 < len(fields):
                     device_class = fields[i+1].decode()
             logging.info("[BtS] Found bluetooth %s", mac_address)
-            #if self.devices[mac_address]['name'] == 'Unknown' or 'name' not in self.devices[mac_address]:
-            name = self.get_device_name(mac_address)
-            #if self.devices[mac_address]['manufacturer'] == 'Unknown' or 'manufacturer' not in self.devices[mac_address]:
-            manufacturer = self.get_device_manufacturer(mac_address)
+            if mac_address not in self.devices or self.devices[mac_address]['name'] == 'Unknown':
+                name = self.get_device_name(mac_address)
+            if mac_address not in self.devices or self.devices[mac_address]['manufacturer'] == 'Unknown':
+                manufacturer = self.get_device_manufacturer(mac_address)
 
             # Update the count, first_seen, and last_seen time of the device
             if mac_address in self.devices:
