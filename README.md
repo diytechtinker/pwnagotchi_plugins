@@ -35,11 +35,11 @@ sudo cp bluetoothsniffer.py /usr/local/share/pwnagotchi/custom-plugins/bluetooth
 3. In your `config.toml` file, add:
 ```toml
 main.plugins.bluetoothsniffer.enabled = true
-main.plugins.bluetoothsniffer.timer = 15 # On how may seconds to scan for bluetooth devices
+main.plugins.bluetoothsniffer.timer = 45 # On how may seconds to scan for bluetooth devices
 main.plugins.bluetoothsniffer.devices_file = "/root/handshakes/bluetooth_devices.json"  # Path to the JSON file with bluetooth devices
-main.plugins.bluetoothsniffer.count_interval = 86400 # On how may seconds to update count bluetooth devices
-main.plugins.bluetoothsniffer.bt_x_coord = 0
-main.plugins.bluetoothsniffer.bt_y_coord = 94
+main.plugins.bluetoothsniffer.devices_file = 86400 # On how may seconds to update count bluetooth devices
+main.plugins.bluetoothsniffer.bt_x_coord = 150
+main.plugins.bluetoothsniffer.bt_y_coord = 96
 ```
 4. Restart your pwnagotchi to load the plugin.
 ```bash
