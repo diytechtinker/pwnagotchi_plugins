@@ -14,21 +14,21 @@ from pwnagotchi.ui.view import BLACK
 
 class BluetoothSniffer(plugins.Plugin):
     __author__ = 'diytechtinker'
-    __version__ = '0.1.1'
+    __version__ = '0.1.2'
     __license__ = 'GPL3'
     __description__ = 'A plugin that sniffs Bluetooth devices and saves their MAC addresses, name and counts to a JSON file'
 
     def __init__(self):
         # Defining the instance variables
         self.options = {
-            'timer': 15,
+            'timer': 45,
             'devices_file': '/root/handshakes/bluetooth_devices.json',
             'count_interval': 86400,
-            'bt_x_coord': 0,
-            'bt_y_coord': 84
+            'bt_x_coord': 150,
+            'bt_y_coord': 96
         }
         self.devices = {}
-        self.last_scan_time = 0
+        self.last_scan_time = time.time()
 
     def on_loaded(self):
         logging.info("[BtS] bluetoothsniffer plugin loaded.")
@@ -47,22 +47,25 @@ class BluetoothSniffer(plugins.Plugin):
             self.devices = json.load(f)
 
     def on_ui_setup(self, ui):
-        ui.add_element('BT', LabeledValue(color=BLACK, label='BT PWND ', value=0,
+        ui.add_element('BtS', LabeledValue(color=BLACK,
+                                           label='BT SNFD ',
+                                           value=" ",
                                            position=(int(self.options["bt_x_coord"]),
                                                      int(self.options["bt_y_coord"])),
-                                           label_font=fonts.Bold, text_font=fonts.Medium))
+                                           label_font=fonts.Bold,
+                                           text_font=fonts.Medium))
 
     def on_unload(self, ui):
         with ui._lock:
-            ui.remove_element('BT')
+            ui.remove_element('BtS')
 
     def on_ui_update(self, ui):
         current_time = time.time()
         # Checking the time elapsed since last scan
         if current_time - self.last_scan_time >= self.options['timer']:
             self.last_scan_time = current_time
-            ui.set('BT', str(self.bt_sniff_info()))
             self.scan()
+            ui.set('BtS', str(self.bt_sniff_info()))
 
     # Method for scanning the nearby bluetooth devices
     def scan(self):
@@ -162,5 +165,5 @@ class BluetoothSniffer(plugins.Plugin):
         num_devices = len(data)
         num_unknown = sum(1 for device in data.values() if device['name'] == 'Unknown' or device['manufacturer'] == 'Unknown')
         num_known = num_devices - num_unknown
-        return_text = "%s (%s)" % (num_devices, num_known)
+        return_text = "%s(%s)" % (num_devices, num_known)
         return return_text
