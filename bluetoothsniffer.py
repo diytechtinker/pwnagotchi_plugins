@@ -24,8 +24,8 @@ class BluetoothSniffer(plugins.Plugin):
             'timer': 45,
             'devices_file': '/root/handshakes/bluetooth_devices.json',
             'count_interval': 86400,
-            'bt_x_coord': 150,
-            'bt_y_coord': 96
+            'bt_x_coord': 160,
+            'bt_y_coord': 66
         }
         self.devices = {}
         self.last_scan_time = time.time()
@@ -46,14 +46,15 @@ class BluetoothSniffer(plugins.Plugin):
         with open(self.options['devices_file'], 'r') as f:
             self.devices = json.load(f)
 
+
     def on_ui_setup(self, ui):
         ui.add_element('BtS', LabeledValue(color=BLACK,
-                                           label='BT SNFD ',
+                                           label='BT SNFD',
                                            value=" ",
                                            position=(int(self.options["bt_x_coord"]),
                                                      int(self.options["bt_y_coord"])),
-                                           label_font=fonts.Bold,
-                                           text_font=fonts.Medium))
+                                           label_font=fonts.Small,
+                                           text_font=fonts.Small))
 
     def on_unload(self, ui):
         with ui._lock:
@@ -64,8 +65,10 @@ class BluetoothSniffer(plugins.Plugin):
         # Checking the time elapsed since last scan
         if current_time - self.last_scan_time >= self.options['timer']:
             self.last_scan_time = current_time
-            self.scan()
+            logging.info("[BtS] Bluetooth sniffed: %s", str(self.bt_sniff_info()))
             ui.set('BtS', str(self.bt_sniff_info()))
+            self.scan()
+
 
     # Method for scanning the nearby bluetooth devices
     def scan(self):
@@ -165,5 +168,5 @@ class BluetoothSniffer(plugins.Plugin):
         num_devices = len(data)
         num_unknown = sum(1 for device in data.values() if device['name'] == 'Unknown' or device['manufacturer'] == 'Unknown')
         num_known = num_devices - num_unknown
-        return_text = "%s(%s)" % (num_devices, num_known)
+        return_text = "%s|%s" % (num_devices, num_known)
         return return_text
