@@ -75,7 +75,7 @@ class BluetoothSniffer(plugins.Plugin):
         logging.info("[BtS] Scanning for bluetooths...")
         current_time = time.time()
         # Running the system command hcitool to scan nearby bluetooth devices
-        cmd_inq = "sudo hcitool inq --flush"
+        cmd_inq = "hcitool inq --flush"
         inq_output = subprocess.check_output(cmd_inq.split())
         changed = False
         for line in inq_output.splitlines()[1:]:
@@ -143,7 +143,7 @@ class BluetoothSniffer(plugins.Plugin):
     # Method to get the device manufacturer
     def get_device_manufacturer(self, mac_address):
         manufacturer = 'Unknown'
-        cmd_info = f"sudo hcitool info {mac_address} | grep 'Manufacturer:' | cut -d ' ' -f 2-"
+        cmd_info = f"hcitool info {mac_address} | grep 'Manufacturer:' | cut -d ' ' -f 2-"
         try:
             logging.info("[BtS] Trying to get manufacturer for %s", mac_address)
             start_time = time.time()
