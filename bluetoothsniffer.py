@@ -32,7 +32,7 @@ class BluetoothSniffer(plugins.Plugin):
 
     def on_loaded(self):
         logging.info("[BtS] bluetoothsniffer plugin loaded.")
-        logging.info("[BtS] Bluetoot devices file location: %s", self.options['devices_file'])
+        logging.info("[BtS] Bluetooth devices file location: %s", self.options['devices_file'])
         # Creating the device file path if it does not exist
         if not os.path.exists(os.path.dirname(self.options['devices_file'])):
             os.makedirs(os.path.dirname(self.options['devices_file']))
@@ -126,7 +126,7 @@ class BluetoothSniffer(plugins.Plugin):
         # Save the updated devices to the JSON file
         if changed:
             with open(self.options['devices_file'], 'w') as f:
-                logging.info("[BtS] Saving bluetooths %s in to json.", name)
+                logging.info("[BtS] Saving bluetooths %s into json.", name)
                 json.dump(self.devices, f)
 
     # Method to get the device name
