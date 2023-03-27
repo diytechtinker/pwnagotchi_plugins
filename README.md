@@ -13,6 +13,7 @@ main.custom_plugins = "/usr/local/share/pwnagotchi/custom-plugins/"
 
 # BluetoothSniffer
 ![Alt text](https://github.com/diytechtinker/pwnagotchi_plugins/blob/main/Pwnagotchi_ha-pwny.jpg)
+
 A plugin for [pwnagotchi](https://github.com/evilsocket/pwnagotchi) that sniffs Bluetooth devices and saves their MAC addresses, name and counts to a JSON file.
 
 ## Requirements
