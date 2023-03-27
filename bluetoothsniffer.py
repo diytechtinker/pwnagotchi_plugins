@@ -32,7 +32,7 @@ class BluetoothSniffer(plugins.Plugin):
 
     def on_loaded(self):
         logging.info("[BtS] bluetoothsniffer plugin loaded.")
-        logging.info("[BtS] Bluetoot devices file location: %s", self.options['devices_file'])
+        logging.info("[BtS] Bluetooth devices file location: %s", self.options['devices_file'])
         # Creating the device file path if it does not exist
         if not os.path.exists(os.path.dirname(self.options['devices_file'])):
             os.makedirs(os.path.dirname(self.options['devices_file']))
@@ -75,7 +75,7 @@ class BluetoothSniffer(plugins.Plugin):
         logging.info("[BtS] Scanning for bluetooths...")
         current_time = time.time()
         # Running the system command hcitool to scan nearby bluetooth devices
-        cmd_inq = "sudo hcitool inq --flush"
+        cmd_inq = "hcitool inq --flush"
         inq_output = subprocess.check_output(cmd_inq.split())
         changed = False
         for line in inq_output.splitlines()[1:]:
@@ -126,7 +126,7 @@ class BluetoothSniffer(plugins.Plugin):
         # Save the updated devices to the JSON file
         if changed:
             with open(self.options['devices_file'], 'w') as f:
-                logging.info("[BtS] Saving bluetooths %s in to json.", name)
+                logging.info("[BtS] Saving bluetooths %s into json.", name)
                 json.dump(self.devices, f)
 
     # Method to get the device name
@@ -143,7 +143,7 @@ class BluetoothSniffer(plugins.Plugin):
     # Method to get the device manufacturer
     def get_device_manufacturer(self, mac_address):
         manufacturer = 'Unknown'
-        cmd_info = f"sudo hcitool info {mac_address} | grep 'Manufacturer:' | cut -d ' ' -f 2-"
+        cmd_info = f"hcitool info {mac_address} | grep 'Manufacturer:' | cut -d ' ' -f 2-"
         try:
             logging.info("[BtS] Trying to get manufacturer for %s", mac_address)
             start_time = time.time()
