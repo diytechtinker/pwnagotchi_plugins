@@ -11,6 +11,7 @@ import pwnagotchi.plugins as plugins
 import pwnagotchi.ui.fonts as fonts
 from pwnagotchi.ui.components import LabeledValue
 from pwnagotchi.ui.view import BLACK
+from datetime import datetime
 
 class BluetoothSniffer(plugins.Plugin):
     __author__ = 'diytechtinker'
@@ -65,7 +66,7 @@ class BluetoothSniffer(plugins.Plugin):
         # Checking the time elapsed since last scan
         if current_time - self.last_scan_time >= self.options['timer']:
             self.last_scan_time = current_time
-            logging.info("[BtS] Bluetooth sniffed: %s", str(self.bt_sniff_info()))
+            #logging.info("[BtS] Bluetooth sniffed: %s", str(self.bt_sniff_info()))
             ui.set('BtS', str(self.bt_sniff_info()))
             self.scan()
 
@@ -85,41 +86,41 @@ class BluetoothSniffer(plugins.Plugin):
                 if fields[i].decode() == "class:" and i+1 < len(fields):
                     device_class = fields[i+1].decode()
             logging.info("[BtS] Found bluetooth %s", mac_address)
-            if mac_address not in self.devices or self.devices[mac_address]['name'] == 'Unknown':
-                name = self.get_device_name(mac_address)
-            if mac_address not in self.devices or self.devices[mac_address]['manufacturer'] == 'Unknown':
-                manufacturer = self.get_device_manufacturer(mac_address)
 
             # Update the count, first_seen, and last_seen time of the device
             if mac_address in self.devices:
-                if name != 'Unknown' and name != self.devices[mac_address]['name']:
+
+                if 'Unknown' == self.devices[mac_address]['name']:
+                    name = self.get_device_name(mac_address)
                     self.devices[mac_address]['name'] = name
-                    self.devices[mac_address]['new_info'] = True
+                    self.devices[mac_address]['new_info'] = 2
                     logging.info("[BtS] Updated bluetooth name: %s", name)
                     changed = True
 
-                if manufacturer != 'Unknown' and manufacturer != self.devices[mac_address]['manufacturer']:
+                if 'Unknown' == self.devices[mac_address]['manufacturer']:
+                    manufacturer = self.get_device_manufacturer(mac_address)
                     self.devices[mac_address]['manufacturer'] = manufacturer
-                    self.devices[mac_address]['new_info'] = True
+                    self.devices[mac_address]['new_info'] = 2
                     logging.info("[BtS] Updated bluetooth manufacturer: %s", manufacturer)
                     changed = True
 
                 if device_class != self.devices[mac_address]['class']:
                     self.devices[mac_address]['class'] = device_class
-                    self.devices[mac_address]['new_info'] = True
+                    self.devices[mac_address]['new_info'] = 2
                     logging.info("[BtS] Updated bluetooth class: %s", device_class)
                     changed = True
 
-                if current_time - self.last_seen_time >= self.options['count_interval']:
+                last_seen_time = int(datetime.strptime(self.devices[mac_address]['last_seen'], '%H:%M:%S %d-%m-%Y').timestamp())
+                if current_time - last_seen_time >= self.options['count_interval']:
                     self.devices[mac_address]['count'] += 1
-                    self.last_seen_time = current_time
                     self.devices[mac_address]['last_seen'] = time.strftime('%H:%M:%S %d-%m-%Y', time.localtime(current_time))
-                    self.devices[mac_address]['new_info'] = True
+                    self.devices[mac_address]['new_info'] = 2
                     logging.info("[BtS] Updated bluetooth count.")
                     changed = True
             else:
+                name = self.get_device_name(mac_address)
+                manufacturer = self.get_device_manufacturer(mac_address)
                 self.devices[mac_address] = {'name': name, 'count': 1, 'class': device_class, 'manufacturer': manufacturer, 'first_seen': time.strftime('%H:%M:%S %d-%m-%Y', time.localtime(current_time)), 'last_seen': time.strftime('%H:%M:%S %d-%m-%Y', time.localtime(current_time)), 'new_info': True}
-                self.last_seen_time = current_time
                 logging.info("[BtS] Added new bluetooth device %s with MAC: %s", name, mac_address)
                 changed = True
 
@@ -163,10 +164,13 @@ class BluetoothSniffer(plugins.Plugin):
         return manufacturer
 
     def bt_sniff_info(self):
-        with open(self.options['devices_file'], 'r') as f:
-            data = json.load(f)
-        num_devices = len(data)
-        num_unknown = sum(1 for device in data.values() if device['name'] == 'Unknown' or device['manufacturer'] == 'Unknown')
-        num_known = num_devices - num_unknown
-        return_text = "%s|%s" % (num_devices, num_known)
+        if os.path.getsize(self.options['devices_file']) != 0:
+            with open(self.options['devices_file'], 'r') as f:
+                 data = json.load(f)
+            num_devices = len(data)
+            num_unknown = sum(1 for device in data.values() if device['name'] == 'Unknown' or device['manufacturer'] == 'Unknown')
+            num_known = num_devices - num_unknown
+            return_text = "%s|%s" % (num_devices, num_known)
+        else:
+            return_text = "0|0"
         return return_text
