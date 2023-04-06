@@ -74,11 +74,8 @@ class BluetoothSniffer(plugins.Plugin):
         inq_output = subprocess.check_output(cmd_inq.split())
         changed = False
         # Loading the data from the device file
-        if os.path.getsize(self.options['devices_file']) != 0:
-            with open(self.options['devices_file'], 'r') as f:
-                data = json.load(f)
-        else:
-            data = {}
+        with open(self.options['devices_file'], 'r') as f:
+            data = json.load(f)
         for line in inq_output.splitlines()[1:]:
             fields = line.split()
             mac_address = fields[0].decode()
